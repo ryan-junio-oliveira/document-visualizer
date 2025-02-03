@@ -95,4 +95,4 @@ Sinta-se à vontade para abrir issues ou pull requests! Toda contribuição é b
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para mais detalhes. 
