@@ -14,6 +14,7 @@
 
 - **PHP 8.4.1+**: [Baixar PHP](https://windows.php.net/downloads/releases/php-8.4.1-nts-Win32-vs17-x64.zip)
 - **Composer 2.7.7+**: [Baixar Composer](https://getcomposer.org/Composer-Setup.exe)
+- **Extensão GD**: habilitada no php.ini 
 
 ## 💻 Instalação
 
