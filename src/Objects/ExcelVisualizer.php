@@ -4,6 +4,10 @@ namespace RyanJunioOliveira\DocumentVisualizer\Objects;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Font;
 
 class ExcelVisualizer implements VisualizerInterface
 {
@@ -16,68 +20,136 @@ class ExcelVisualizer implements VisualizerInterface
         try {
             $spreadsheet = IOFactory::load($this->documentUrl);
             $sheet = $spreadsheet->getActiveSheet();
-
-            $numLinhas = $sheet->getHighestRow();
-            $numColunas = $sheet->getHighestColumn();
-
-            $html = '
-            <!DOCTYPE html>
-            <html lang="pt-BR">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Visualizador de Planilha</title>
-                <!-- Tailwind CSS CDN -->
-                <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-            </head>
-            <body class="bg-gray-100">
-
-            <!-- Navbar simples -->
-            <div class="w-full z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
-                <div class="flex justify-center items-center space-x-4">
-                </div>
-            </div>
-
-            <div class="overflow-x-auto bg-white shadow-lg rounded-lg p-6 mt-6">';
-
-            $html .= '<table class="min-w-full table-auto border-collapse text-left">';
-            $html .= '<thead class="bg-gray-200">';
-            $html .= '<tr>';
-
-            foreach ($sheet->getRowIterator(1, 1) as $row) {
+            $mergeCells = $sheet->getMergeCells(); // Células mescladas
+    
+            $html = "<table cellspacing='0' cellpadding='5' style='border-collapse: collapse; font-family: Arial, sans-serif;'>";
+    
+            // Para rastrear células já processadas (evitar duplicação)
+            $processedCells = [];
+    
+            foreach ($sheet->getRowIterator() as $row) {
+                $html .= "<tr>";
+    
                 foreach ($row->getCellIterator() as $cell) {
-                    $valorCelula = htmlspecialchars($this->utf8EncodeIfNeeded($cell->getValue()));
-                    $html .= '<th class="px-4 py-2 font-bold text-sm text-gray-600 border-b">' . $valorCelula . '</th>';
+                    $coordinate = $cell->getCoordinate();
+    
+                    // Se a célula já foi processada (por ser parte de uma mesclagem), pula ela
+                    if (in_array($coordinate, $processedCells)) {
+                        continue;
+                    }
+    
+                    $value = $cell->getFormattedValue(); // Mantém a formatação original (datas, números)
+                    $style = $sheet->getStyle($coordinate);
+                    $font = $style->getFont();
+                    $fill = $style->getFill();
+                    $alignment = $style->getAlignment();
+                    $borders = $style->getBorders(); // Obtenção das bordas
+    
+                    // Configurações de Mesclagem
+                    $colspan = 1;
+                    $rowspan = 1;
+    
+                    foreach ($mergeCells as $mergedRange) {
+                        if ($sheet->getCell($coordinate)->isInRange($mergedRange)) {
+                            [$start, $end] = explode(':', $mergedRange);
+    
+                            if ($coordinate === $start) {
+                                // Somente a primeira célula da mesclagem é renderizada
+                                $startColumn = preg_replace('/\d/', '', $start);
+                                $endColumn = preg_replace('/\d/', '', $end);
+                                $startRow = preg_replace('/\D/', '', $start);
+                                $endRow = preg_replace('/\D/', '', $end);
+    
+                                $colspan = ord($endColumn) - ord($startColumn) + 1;
+                                $rowspan = $endRow - $startRow + 1;
+    
+                                // Marca todas as outras células da mesclagem como processadas
+                                for ($col = ord($startColumn); $col <= ord($endColumn); $col++) {
+                                    for ($rowIdx = $startRow; $rowIdx <= $endRow; $rowIdx++) {
+                                        $mergedCoordinate = chr($col) . $rowIdx;
+                                        if ($mergedCoordinate != $coordinate) {
+                                            $processedCells[] = $mergedCoordinate;
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Se a célula não for a primeira da mesclagem, pula para a próxima
+                                continue 2;
+                            }
+                        }
+                    }
+    
+                    // CSS Dinâmico
+                    $css = "padding: 5px;"; // Apenas padding básico
+    
+                    // Fontes
+                    if ($font->getBold()) $css .= "font-weight: bold; ";
+                    if ($font->getItalic()) $css .= "font-style: italic; ";
+                    if ($font->getColor()->getRGB() !== '000000') $css .= "color: #" . $font->getColor()->getRGB() . "; ";
+                    if ($font->getSize()) $css .= "font-size: {$font->getSize()}px; ";
+    
+                    // Preenchimento
+                    if ($fill->getFillType() === 'solid' && $fill->getStartColor()->getRGB() !== 'FFFFFF') {
+                        $css .= "background-color: #" . $fill->getStartColor()->getRGB() . "; ";
+                    }
+    
+                    // Alinhamento
+                    if ($alignment->getHorizontal() === Alignment::HORIZONTAL_CENTER) $css .= "text-align: center; ";
+                    if ($alignment->getHorizontal() === Alignment::HORIZONTAL_RIGHT) $css .= "text-align: right; ";
+    
+                    // Verifica bordas
+                    $borderCss = '';
+    
+                    // Somente aplica borda se houver uma borda definida
+                    if ($borders->getTop()->getBorderStyle() != Border::BORDER_NONE) {
+                        $borderCss .= 'border-top: ' . $this->getBorderStyle($borders->getTop()) . '; ';
+                    }
+                    if ($borders->getBottom()->getBorderStyle() != Border::BORDER_NONE) {
+                        $borderCss .= 'border-bottom: ' . $this->getBorderStyle($borders->getBottom()) . '; ';
+                    }
+                    if ($borders->getLeft()->getBorderStyle() != Border::BORDER_NONE) {
+                        $borderCss .= 'border-left: ' . $this->getBorderStyle($borders->getLeft()) . '; ';
+                    }
+                    if ($borders->getRight()->getBorderStyle() != Border::BORDER_NONE) {
+                        $borderCss .= 'border-right: ' . $this->getBorderStyle($borders->getRight()) . '; ';
+                    }
+    
+                    // Adiciona as bordas se existirem
+                    if ($borderCss) {
+                        $css .= $borderCss;
+                    }
+    
+                    // Renderizar a célula com colspan e rowspan, se aplicável
+                    $html .= "<td style='$css' colspan='$colspan' rowspan='$rowspan'>$value</td>";
                 }
+    
+                $html .= "</tr>";
             }
-            $html .= '</tr>';
-            $html .= '</thead>';
-
-            $html .= '<tbody class="bg-white divide-y divide-gray-200">';
-            for ($linha = 2; $linha <= $numLinhas; $linha++) {
-                $html .= '<tr class="hover:bg-gray-100">';
-                for ($coluna = 'A'; $coluna <= $numColunas; $coluna++) {
-                    $valorCelula = htmlspecialchars($this->utf8EncodeIfNeeded($sheet->getCell($coluna . $linha)->getValue()));
-                    $html .= '<td class="px-4 py-2 text-sm text-gray-700">' . $valorCelula . '</td>';
-                }
-                $html .= '</tr>';
-            }
-            $html .= '</tbody>';
-            $html .= '</table>';
-            $html .= '</div></body></html>';
-
+    
+            $html .= "</table>";
+    
             return $html;
         } catch (\Throwable $th) {
             return $this->errorPage();
         }
     }
-
-    private function utf8EncodeIfNeeded($valor): string
+    
+    private function getBorderStyle($border): string
     {
-        if (is_string($valor) && mb_detect_encoding($valor, 'UTF-8', true) === false) {
-            return utf8_encode($valor);
+        switch ($border->getBorderStyle()) {
+            case Border::BORDER_THIN:
+                return '1px solid #000';
+            case Border::BORDER_MEDIUM:
+                return '2px solid #000';
+            case Border::BORDER_THICK:
+                return '3px solid #000';
+            case Border::BORDER_DOTTED:
+                return '1px dotted #000';
+            case Border::BORDER_DASHED:
+                return '1px dashed #000';
+            default:
+                return 'none';
         }
-        return (string) $valor;
     }
 
     private function errorPage(): string
