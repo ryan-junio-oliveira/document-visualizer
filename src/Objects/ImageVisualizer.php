@@ -47,24 +47,37 @@ class ImageVisualizer implements VisualizerInterface
 
             <div class="p-6 w-full max-w-4xl text-center mt-2">
                 <div class="flex justify-center mb-4">
-                    <img id="image-viewer" src="' . $this->documentUrl . '" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
+                    <img id="image-viewer" src="' . $this->documentUrl . '" alt="Visualização de imagem" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
+                </div>
+                <div id="error-message" class="text-white text-lg hidden">
+                    Não foi possível visualizar este documento. <br>
+                    <a href="' . $this->documentUrl . '" download class="underline text-blue-400">Clique aqui para baixar o documento.</a>
                 </div>
             </div>
 
             <script>
                 let zoomLevel = 1;
                 const img = document.getElementById("image-viewer");
+                const errorMessage = document.getElementById("error-message");
 
+                // Zoom in
                 document.getElementById("zoom-in").addEventListener("click", function () {
                     zoomLevel += 0.1;
                     img.style.transform = "scale(" + zoomLevel + ")";
                 });
 
+                // Zoom out
                 document.getElementById("zoom-out").addEventListener("click", function () {
-                    if (zoomLevel <= 0.2) return; // Definir um limite mínimo de zoom
+                    if (zoomLevel <= 0.2) return;
                     zoomLevel -= 0.1;
                     img.style.transform = "scale(" + zoomLevel + ")";
                 });
+
+                // Detecta erro no carregamento da imagem e exibe a mensagem de erro
+                img.onerror = function () {
+                    img.style.display = "none";
+                    errorMessage.classList.remove("hidden");
+                };
             </script>
         </body>
         </html>';

@@ -10,6 +10,7 @@ class PDFVisualizer implements VisualizerInterface
         private $documentUrl,
         private ?string $addtionalContent = null,
     ) {}
+    
     public function viewer(): mixed
     {
         return '
@@ -28,7 +29,7 @@ class PDFVisualizer implements VisualizerInterface
         <body class="flex flex-col w-full bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center min-h-screen">
 
             <!-- Navbar fixada no topo -->
-            <div class="w-full flex flex-col justify-center items-center z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
+            <div class="w-full z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
                 <div class="flex justify-center items-center space-x-4">
 
                     <button id="prev" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
@@ -38,6 +39,10 @@ class PDFVisualizer implements VisualizerInterface
                     <button id="zoom-out" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
                         <i class="fas fa-search-minus"></i>
                     </button>
+
+                    <div class="p-1">
+                        <input id="page-input" type="number" min="1" class="text-black p-1 rounded-md text-center w-12" placeholder="1" />
+                    </div>
 
                     ' . $this->addtionalContent . '
 
@@ -55,12 +60,19 @@ class PDFVisualizer implements VisualizerInterface
                 <div class="mt-2">
                     <span class="text-white text-sm">Página <span id="page-num">1</span> de <span id="page-count">?</span></span>
                 </div>
+                
             </div>
 
             <div class="p-6 w-full max-w-4xl text-center mt-2">
                 <div class="flex justify-center mb-4">
                     <canvas id="pdf-canvas" class="rounded-lg shadow-xl bg-white"></canvas>
                 </div>
+                <div id="error-message" class="hidden text-red-600 font-bold text-lg">
+                    Não foi possível visualizar este documento.
+                </div>
+                <a id="download-link" href="' . $this->documentUrl . '" download class="hidden bg-blue-600 text-white px-4 py-2 rounded-md">
+                    Baixar documento
+                </a>
             </div>
 
             <!-- PDF.js CDN -->
@@ -75,7 +87,9 @@ class PDFVisualizer implements VisualizerInterface
                     pageNumIsPending = null,
                     scale = 1.5, // Definimos o valor inicial do zoom aqui
                     canvas = document.getElementById("pdf-canvas"),
-                    ctx = canvas.getContext("2d");
+                    ctx = canvas.getContext("2d"),
+                    errorMessage = document.getElementById("error-message"),
+                    downloadLink = document.getElementById("download-link");
 
                 // Função para renderizar a página com o zoom aplicado
                 const renderPage = num => {
@@ -112,11 +126,17 @@ class PDFVisualizer implements VisualizerInterface
                     }
                 };
 
-                // Obtém o documento PDF e renderiza a primeira página
+                // Tentar carregar o documento PDF
                 pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
                     pdfDoc = pdfDoc_;
                     document.getElementById("page-count").textContent = pdfDoc.numPages;
                     renderPage(pageNum);
+                }).catch(error => {
+                    // Exibir mensagem de erro e botão de download
+                    canvas.style.display = "none";
+                    errorMessage.classList.remove("hidden");
+                    downloadLink.classList.remove("hidden");
+                    console.error("Erro ao carregar o documento:", error);
                 });
 
                 // Controle para página anterior
@@ -144,6 +164,20 @@ class PDFVisualizer implements VisualizerInterface
                     if (scale <= 0.5) return; // Define um limite mínimo de zoom
                     scale -= 0.25; // Diminui o zoom
                     renderPage(pageNum); // Renderiza novamente a página atual
+                });
+
+                // Input de número da página
+                const pageInput = document.getElementById("page-input");
+
+                // Valida e avança para a página ao pressionar Enter ou sair do campo de input
+                pageInput.addEventListener("change", () => {
+                    let inputPage = parseInt(pageInput.value);
+                    if (inputPage >= 1 && inputPage <= pdfDoc.numPages) {
+                        pageNum = inputPage;
+                        queueRenderPage(pageNum);
+                    } else {
+                        alert("Número de página inválido. Escolha uma página entre 1 e " + pdfDoc.numPages);
+                    }
                 });
             </script>
         </body>

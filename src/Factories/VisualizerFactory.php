@@ -2,6 +2,8 @@
 
 namespace RyanJunioOliveira\DocumentVisualizer\Factories;
 
+use RyanJunioOliveira\DocumentVisualizer\Objects\Unsupported;
+use PhpOffice\PhpWord\Exception\UnsupportedImageTypeException;
 use RyanJunioOliveira\DocumentVisualizer\Objects\PDFVisualizer;
 use RyanJunioOliveira\DocumentVisualizer\Objects\ExcelVisualizer;
 use RyanJunioOliveira\DocumentVisualizer\Objects\ImageVisualizer;
@@ -29,14 +31,17 @@ class VisualizerFactory
                 break;
             case 'xlsx':
             case 'xls':
+            case 'csv':
                 return new ExcelVisualizer($this->documentUrl);
+                break;
             case 'jpeg':
             case 'jpg':
             case 'png':
             case 'svg':
                 return new ImageVisualizer($this->documentUrl, $this->addtionalContent);
+                break;
             default:
-                throw new \Exception("Extensão não suportada: " . $this->extension);
+                return new Unsupported($this->documentUrl, $this->addtionalContent);
         }
     }
 }
