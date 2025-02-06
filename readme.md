@@ -47,7 +47,7 @@ use RyanJunioOliveira\DocumentVisualizer\DocumentViewer;
 
 require('vendor/autoload.php');
 
-$viewer = new DocumentViewer('teste2.pdf', 'Visualizador de documentos', $addtionalContent);
+$viewer = new DocumentViewer('teste2.pdf', $addtionalContent);
 
 echo $viewer->visualize();
 ```
@@ -74,7 +74,7 @@ $addtionalContent = '
     </script>
 ';
 
-$viewer = new DocumentViewer('teste2.pdf', 'Visualizador de documentos', $addtionalContent);
+$viewer = new DocumentViewer('teste2.pdf', $addtionalContent);
 
 ?>
 
