@@ -6,7 +6,6 @@ use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
 
 class PDFVisualizer implements VisualizerInterface
 {
-
     public function __construct(
         private $documentUrl,
         private ?string $addtionalContent = null,
@@ -29,7 +28,7 @@ class PDFVisualizer implements VisualizerInterface
         <body class="flex flex-col w-full bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center min-h-screen">
 
             <!-- Navbar fixada no topo -->
-            <div class="w-full z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
+            <div class="w-full flex flex-col justify-center items-center z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
                 <div class="flex justify-center items-center space-x-4">
 
                     <button id="prev" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">

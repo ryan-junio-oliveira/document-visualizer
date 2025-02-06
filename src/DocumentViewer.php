@@ -8,8 +8,7 @@ class DocumentViewer
 {
     public function __construct(
         private $documentUrl,
-        private $title,
-        private ?string $addtionalContent,
+        private ?string $addtionalContent = null,
     ) {}
 
     public function visualize(): string
