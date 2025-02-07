@@ -7,10 +7,12 @@ use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
+use RyanJunioOliveira\DocumentVisualizer\Traits\HtmlTemplate;
 
 class ExcelVisualizer implements VisualizerInterface
 {
+    use HtmlTemplate;
+
     public function __construct(
         private $documentUrl
     ) {}
@@ -18,52 +20,71 @@ class ExcelVisualizer implements VisualizerInterface
     public function viewer(): string
     {
         try {
+            $html = $this->header();
+
+            $html .= '
+                <div class="flex justify-center items-center space-x-4">
+
+                    <button id="zoom-out" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+
+                    <button id="zoom-in" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+
+                </div>
+                
+            </div>
+
+            <div id="table-container" style="transform: scale(1); transition: transform 0.3s; overflow-x: auto;" class="overflow-auto p-6 w-full max-w-4xl text-center mt-6 justify-center items-center bg-white rounded z-20">
+                <table id="excel-table" cellspacing="0" cellpadding="5" style="border-collapse: collapse; font-family: Arial, sans-serif; width: 100%;">
+            ';
+
             $spreadsheet = IOFactory::load($this->documentUrl);
             $sheet = $spreadsheet->getActiveSheet();
             $mergeCells = $sheet->getMergeCells(); // Células mescladas
-    
-            $html = "<table cellspacing='0' cellpadding='5' style='border-collapse: collapse; font-family: Arial, sans-serif;'>";
-    
+
+            $html .= "<table cellspacing='0' cellpadding='5' style='border-collapse: collapse; font-family: Arial, sans-serif;'>";
+
             // Para rastrear células já processadas (evitar duplicação)
             $processedCells = [];
-    
+
             foreach ($sheet->getRowIterator() as $row) {
                 $html .= "<tr>";
-    
+
                 foreach ($row->getCellIterator() as $cell) {
                     $coordinate = $cell->getCoordinate();
-    
+
                     // Se a célula já foi processada (por ser parte de uma mesclagem), pula ela
                     if (in_array($coordinate, $processedCells)) {
                         continue;
                     }
-    
+
                     $value = $cell->getFormattedValue(); // Mantém a formatação original (datas, números)
                     $style = $sheet->getStyle($coordinate);
                     $font = $style->getFont();
                     $fill = $style->getFill();
                     $alignment = $style->getAlignment();
                     $borders = $style->getBorders(); // Obtenção das bordas
-    
+
                     // Configurações de Mesclagem
                     $colspan = 1;
                     $rowspan = 1;
-    
+
                     foreach ($mergeCells as $mergedRange) {
                         if ($sheet->getCell($coordinate)->isInRange($mergedRange)) {
                             [$start, $end] = explode(':', $mergedRange);
-    
+
                             if ($coordinate === $start) {
-                                // Somente a primeira célula da mesclagem é renderizada
                                 $startColumn = preg_replace('/\d/', '', $start);
                                 $endColumn = preg_replace('/\d/', '', $end);
                                 $startRow = preg_replace('/\D/', '', $start);
                                 $endRow = preg_replace('/\D/', '', $end);
-    
+
                                 $colspan = ord($endColumn) - ord($startColumn) + 1;
                                 $rowspan = $endRow - $startRow + 1;
-    
-                                // Marca todas as outras células da mesclagem como processadas
+
                                 for ($col = ord($startColumn); $col <= ord($endColumn); $col++) {
                                     for ($rowIdx = $startRow; $rowIdx <= $endRow; $rowIdx++) {
                                         $mergedCoordinate = chr($col) . $rowIdx;
@@ -73,34 +94,32 @@ class ExcelVisualizer implements VisualizerInterface
                                     }
                                 }
                             } else {
-                                // Se a célula não for a primeira da mesclagem, pula para a próxima
                                 continue 2;
                             }
                         }
                     }
-    
+
                     // CSS Dinâmico
                     $css = "padding: 5px;"; // Apenas padding básico
-    
+
                     // Fontes
                     if ($font->getBold()) $css .= "font-weight: bold; ";
                     if ($font->getItalic()) $css .= "font-style: italic; ";
                     if ($font->getColor()->getRGB() !== '000000') $css .= "color: #" . $font->getColor()->getRGB() . "; ";
                     if ($font->getSize()) $css .= "font-size: {$font->getSize()}px; ";
-    
+
                     // Preenchimento
                     if ($fill->getFillType() === 'solid' && $fill->getStartColor()->getRGB() !== 'FFFFFF') {
                         $css .= "background-color: #" . $fill->getStartColor()->getRGB() . "; ";
                     }
-    
+
                     // Alinhamento
                     if ($alignment->getHorizontal() === Alignment::HORIZONTAL_CENTER) $css .= "text-align: center; ";
                     if ($alignment->getHorizontal() === Alignment::HORIZONTAL_RIGHT) $css .= "text-align: right; ";
-    
+
                     // Verifica bordas
                     $borderCss = '';
-    
-                    // Somente aplica borda se houver uma borda definida
+
                     if ($borders->getTop()->getBorderStyle() != Border::BORDER_NONE) {
                         $borderCss .= 'border-top: ' . $this->getBorderStyle($borders->getTop()) . '; ';
                     }
@@ -113,27 +132,47 @@ class ExcelVisualizer implements VisualizerInterface
                     if ($borders->getRight()->getBorderStyle() != Border::BORDER_NONE) {
                         $borderCss .= 'border-right: ' . $this->getBorderStyle($borders->getRight()) . '; ';
                     }
-    
-                    // Adiciona as bordas se existirem
+
                     if ($borderCss) {
                         $css .= $borderCss;
                     }
-    
-                    // Renderizar a célula com colspan e rowspan, se aplicável
+
                     $html .= "<td style='$css' colspan='$colspan' rowspan='$rowspan'>$value</td>";
                 }
-    
+
                 $html .= "</tr>";
             }
-    
+
             $html .= "</table>";
-    
+            $html .= '</div>';
+
+            $html .= $this->footer();
+
+            // Adicionando script para funcionalidade de zoom
+            $html .= '
+            <script>
+                let zoomLevel = 1;
+                const tableContainer = document.getElementById("table-container");
+
+                document.getElementById("zoom-in").addEventListener("click", function () {
+                    zoomLevel += 0.1;
+                    tableContainer.style.transform = "scale(" + zoomLevel + ")";
+                });
+
+                document.getElementById("zoom-out").addEventListener("click", function () {
+                    if (zoomLevel <= 0.2) return;
+                    zoomLevel -= 0.1;
+                    tableContainer.style.transform = "scale(" + zoomLevel + ")";
+                });
+            </script>
+            ';
+
             return $html;
         } catch (\Throwable $th) {
             return $this->errorPage();
         }
     }
-    
+
     private function getBorderStyle($border): string
     {
         switch ($border->getBorderStyle()) {
@@ -150,27 +189,5 @@ class ExcelVisualizer implements VisualizerInterface
             default:
                 return 'none';
         }
-    }
-
-    private function errorPage(): string
-    {
-        return '
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Erro ao carregar o documento</title>
-            <!-- Tailwind CSS CDN -->
-            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        </head>
-        <body class="bg-red-100 flex items-center justify-center min-h-screen">
-            <div class="text-center">
-                <h1 class="text-3xl text-red-600 font-bold">Erro ao carregar o documento</h1>
-                <p class="text-red-500 mt-2">Não foi possível visualizar o documento no momento.</p>
-                <a href="' . $this->documentUrl . '" download class="text-blue-500 underline mt-4">Clique aqui para baixar o documento</a>
-            </div>
-        </body>
-        </html>';
     }
 }

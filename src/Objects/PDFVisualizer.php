@@ -3,9 +3,12 @@
 namespace RyanJunioOliveira\DocumentVisualizer\Objects;
 
 use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
+use RyanJunioOliveira\DocumentVisualizer\Traits\HtmlTemplate;
 
 class PDFVisualizer implements VisualizerInterface
 {
+    use HtmlTemplate;
+
     public function __construct(
         private $documentUrl,
         private ?string $addtionalContent = null,
@@ -13,29 +16,16 @@ class PDFVisualizer implements VisualizerInterface
     
     public function viewer(): mixed
     {
-        return '
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        $html = $this->header();
 
-            <!-- Tailwind CSS CDN -->
-            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-            <!-- Font Awesome CDN -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        </head>
-        <body class="flex flex-col w-full bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center min-h-screen">
-
-            <div class="w-full z-50 bg-gray-900 bg-opacity-70 text-white py-2 text-center shadow-lg backdrop-blur-md">
+        $html .= '
                 <div class="flex justify-center items-center space-x-4">
 
-                    <button id="prev" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
+                    <button id="prev" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-arrow-left"></i>
                     </button>
 
-                    <button id="zoom-out" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
+                    <button id="zoom-out" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-search-minus"></i>
                     </button>
 
@@ -45,11 +35,11 @@ class PDFVisualizer implements VisualizerInterface
 
                     ' . $this->addtionalContent . '
 
-                    <button id="zoom-in" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
+                    <button id="zoom-in" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-search-plus"></i>
                     </button>
 
-                    <button id="next" class="icon-button bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow transition-transform transform hover:scale-105">
+                    <button id="next" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -178,8 +168,9 @@ class PDFVisualizer implements VisualizerInterface
                         alert("Número de página inválido. Escolha uma página entre 1 e " + pdfDoc.numPages);
                     }
                 });
-            </script>
-        </body>
-        </html>';
+            </script>';
+
+        $html .= $this->footer();
+        return $html;
     }
 }
