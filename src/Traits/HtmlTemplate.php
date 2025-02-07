@@ -44,7 +44,7 @@ trait HtmlTemplate
             <!-- Tailwind CSS CDN -->
             <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
         </head>
-        <body class="bg-red-100 flex items-center justify-center min-h-screen">
+        <body class="bg-gray-100 flex items-center justify-center min-h-screen">
             <div class="text-center">
                 <h1 class="text-3xl text-red-600 font-bold">Erro ao carregar o documento</h1>
                 <p class="mt-4 text-lg">Ocorreu um erro ao tentar visualizar o documento. Verifique se o arquivo está corrompido ou se o caminho está correto.</p>
