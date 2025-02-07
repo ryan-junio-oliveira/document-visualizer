@@ -7,6 +7,7 @@ use PhpOffice\PhpWord\Exception\UnsupportedImageTypeException;
 use RyanJunioOliveira\DocumentVisualizer\Objects\PDFVisualizer;
 use RyanJunioOliveira\DocumentVisualizer\Objects\ExcelVisualizer;
 use RyanJunioOliveira\DocumentVisualizer\Objects\ImageVisualizer;
+use RyanJunioOliveira\DocumentVisualizer\Objects\WordVisualizer;
 
 class VisualizerFactory
 {
@@ -22,6 +23,9 @@ class VisualizerFactory
         $extension = mb_strtolower($this->extension);
 
         switch ($extension) {
+            case 'docx':
+                return new WordVisualizer($this->documentUrl, $this->addtionalContent);
+                break;
             case 'pdf':
                 return new PDFVisualizer($this->documentUrl, $this->addtionalContent);
                 break;
