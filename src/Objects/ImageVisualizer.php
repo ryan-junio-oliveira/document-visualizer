@@ -25,7 +25,7 @@ class ImageVisualizer implements VisualizerInterface
                         <i class="fas fa-search-minus"></i>
                     </button>
 
-                    ' . $this->addtionalContent . '
+                    ' .htmlspecialchars($this->addtionalContent,ENT_QUOTES, 'UTF-8') . '
 
                     <button id="zoom-in" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-search-plus"></i>
@@ -38,12 +38,12 @@ class ImageVisualizer implements VisualizerInterface
             <div class="p-6 w-full max-w-4xl text-center mt-6 justify-center items-center">
 
                 <div class="flex justify-center mb-4">
-                    <img id="image-viewer" src="' . $this->documentUrl . '" alt="Visualização de imagem" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
+                    <img id="image-viewer" src="' .htmlspecialchars($this->documentUrl,ENT_QUOTES, 'UTF-8') . '" alt="Visualização de imagem" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
                 </div>
 
                 <div id="error-message" class="text-white text-lg hidden">
                     Não foi possível visualizar este documento. <br>
-                    <a href="' . $this->documentUrl . '" download class="underline text-blue-400">Clique aqui para baixar o documento.</a>
+                    <a href="' .htmlspecialchars($this->documentUrl,ENT_QUOTES, 'UTF-8') . '" download class="underline text-blue-400">Clique aqui para baixar o documento.</a>
                 </div>
 
             </div>

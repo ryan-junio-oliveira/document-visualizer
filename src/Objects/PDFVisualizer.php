@@ -32,8 +32,8 @@ class PDFVisualizer implements VisualizerInterface
                     <div class="p-1">
                         <input id="page-input" type="number" min="1" class="text-black p-1 rounded-md text-center w-12" placeholder="1" />
                     </div>
-
-                    ' . $this->addtionalContent . '
+                    
+                    ' .  htmlspecialchars($this->addtionalContent,ENT_QUOTES, 'UTF-8') . '
 
                     <button id="zoom-in" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                         <i class="fas fa-search-plus"></i>
@@ -59,7 +59,7 @@ class PDFVisualizer implements VisualizerInterface
                 <div id="error-message" class="hidden text-red-600 font-bold text-lg">
                     Não foi possível visualizar este documento.
                 </div>
-                <a id="download-link" href="' . $this->documentUrl . '" download class="hidden bg-blue-600 text-white px-4 py-2 rounded-md">
+                <a id="download-link" href="' . htmlspecialchars($this->documentUrl,ENT_QUOTES, 'UTF-8') . '" download class="hidden bg-blue-600 text-white px-4 py-2 rounded-md">
                     Baixar documento
                 </a>
             </div>
@@ -69,7 +69,7 @@ class PDFVisualizer implements VisualizerInterface
 
             <!-- Custom JS -->
             <script>
-                const url = "' . $this->documentUrl . '";
+                const url = "' . htmlspecialchars($this->documentUrl,ENT_QUOTES, 'UTF-8') . '";
                 let pdfDoc = null,
                     pageNum = 1,
                     pageIsRendering = false,

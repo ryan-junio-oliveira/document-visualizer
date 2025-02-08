@@ -27,7 +27,7 @@ class Unsupported implements VisualizerInterface
             <div class="text-center">
                 <h1 class="text-3xl text-gray-800 font-bold">Documento não suportado</h1>
                 <p class="text-gray-500 mt-2">O tipo de documento enviado não é suportado para visualização.</p>
-                <a href="' . $this->documentUrl . '" download class="text-blue-500 underline mt-4">Clique aqui para baixar o documento</a>
+                <a href="' . htmlspecialchars($this->documentUrl,ENT_QUOTES, 'UTF-8') . '" download class="text-blue-500 underline mt-4">Clique aqui para baixar o documento</a>
             </div>
         </body>
         </html>';
