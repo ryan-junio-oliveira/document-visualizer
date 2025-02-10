@@ -22,7 +22,7 @@ trait HtmlTemplate
         <body class="bg-black bg-opacity-70 backdrop-blur-md flex items-center flex flex-col w-full min-h-screen">
 
             <!-- Navbar que ocupa a largura total -->
-            <div class="w-full z-50 relative bg-gray-900 bg-opacity-70 text-white py-2 text-center flex flex-col shadow-lg backdrop-blur-md">';
+            <div class="w-full z-10 relative bg-gray-900 bg-opacity-70 text-white py-2 text-center flex flex-col shadow-lg backdrop-blur-md">';
     }
 
     private function footer()

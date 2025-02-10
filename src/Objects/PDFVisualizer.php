@@ -2,23 +2,37 @@
 
 namespace RyanJunioOliveira\DocumentVisualizer\Objects;
 
+use RuntimeException;
 use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
 use RyanJunioOliveira\DocumentVisualizer\Traits\HtmlTemplate;
+use RyanJunioOliveira\DocumentVisualizer\Traits\Sanitize;
 
 class PDFVisualizer implements VisualizerInterface
 {
-    use HtmlTemplate;
+    use HtmlTemplate, Sanitize;
+
+    private string $documentUrl;
+    private ?string $addtionalContent = null;
 
     public function __construct(
-        private $documentUrl,
-        private ?string $addtionalContent = null,
-    ) {}
-    
+        $documentUrl,
+        $addtionalContent
+    ) {
+        $this->documentUrl = $this->sanitizeContent($documentUrl);
+        $this->addtionalContent = $this->sanitizeContent($addtionalContent);
+    }
+
     public function viewer(): mixed
     {
         $html = $this->header();
 
-        $html .= '
+        try {
+
+            if (!file_exists($this->documentUrl)) {
+                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
+            }
+
+            $html .= '
                 <div class="flex justify-center items-center space-x-4">
 
                     <button id="prev" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
@@ -170,7 +184,10 @@ class PDFVisualizer implements VisualizerInterface
                 });
             </script>';
 
-        $html .= $this->footer();
-        return $html;
+            $html .= $this->footer();
+            return $html;
+        } catch (\Throwable $th) {
+            return $this->errorPage();
+        }
     }
 }
