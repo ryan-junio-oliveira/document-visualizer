@@ -2,25 +2,35 @@
 
 namespace RyanJunioOliveira\DocumentVisualizer\Objects;
 
+use RuntimeException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use RyanJunioOliveira\DocumentVisualizer\Traits\Sanitize;
 use RyanJunioOliveira\DocumentVisualizer\Traits\HtmlTemplate;
+use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
 
 class ExcelVisualizer implements VisualizerInterface
 {
-    use HtmlTemplate;
+    use HtmlTemplate, Sanitize;
+
+    private string $documentUrl;
+    private ?string $addtionalContent = null;
 
     public function __construct(
-        private $documentUrl
-    ) {}
+        $documentUrl
+    ) {
+        $this->documentUrl = $this->sanitizeContent($documentUrl);
+    }
 
     public function viewer(): string
     {
         try {
             $html = $this->header();
+
+            if(!file_exists($this->documentUrl)){
+                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
+            }
 
             $html .= '
                 <div class="flex justify-center items-center space-x-4">
@@ -37,7 +47,7 @@ class ExcelVisualizer implements VisualizerInterface
                 
             </div>
 
-            <div id="table-container" style="transform: scale(1); transition: transform 0.3s; overflow-x: auto;" class="overflow-auto p-6 w-full max-w-4xl text-center mt-6 justify-center items-center bg-white rounded z-20">
+            <div id="table-container" style="transform: scale(1); transition: transform 0.3s; overflow-x: auto;" class="overflow-auto p-6 w-full max-w-4xl text-center mt-6 justify-center items-center bg-white rounded z-0">
                 <table id="excel-table" cellspacing="0" cellpadding="5" style="border-collapse: collapse; font-family: Arial, sans-serif; width: 100%;">
             ';
 

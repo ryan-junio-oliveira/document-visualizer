@@ -2,37 +2,51 @@
 
 namespace RyanJunioOliveira\DocumentVisualizer\Objects;
 
-use PhpOffice\PhpWord\IOFactory;
+use RuntimeException;
 use PhpOffice\PhpWord\Settings;
-use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
+use PhpOffice\PhpWord\IOFactory;
+use RyanJunioOliveira\DocumentVisualizer\Traits\Sanitize;
 use RyanJunioOliveira\DocumentVisualizer\Traits\HtmlTemplate;
+use RyanJunioOliveira\DocumentVisualizer\Interfaces\VisualizerInterface;
 
 class WordVisualizer implements VisualizerInterface
 {
-    use HtmlTemplate;
+    use HtmlTemplate, Sanitize;
+
+    private string $documentUrl;
+    private ?string $addtionalContent = null;
 
     public function __construct(
-        private string $documentUrl,
-        private ?string $addtionalContent = null,
-    ) {}
+        $documentUrl,
+        $addtionalContent
+    ) {
+        $this->documentUrl = $this->sanitizeContent($documentUrl);
+        $this->addtionalContent = $this->sanitizeContent($addtionalContent);
+    }
 
     public function viewer(): string
     {
-        Settings::setOutputEscapingEnabled(true);
+        try {
 
-        $word = IOFactory::load($this->documentUrl);
-        $htmlWriter = IOFactory::createWriter($word, 'HTML');
+            if (!file_exists($this->documentUrl)) {
+                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
+            }
 
-        ob_start();
-        $htmlWriter->save('php://output');
-        $wordHtml = ob_get_contents();
-        ob_end_clean();
+            Settings::setOutputEscapingEnabled(true);
 
-        $styles = $this->getDocumentStyles($wordHtml);
+            $word = IOFactory::load($this->documentUrl);
+            $htmlWriter = IOFactory::createWriter($word, 'HTML');
 
-        $html = $this->header();
+            ob_start();
+            $htmlWriter->save('php://output');
+            $wordHtml = ob_get_contents();
+            ob_end_clean();
 
-        $html .= '<style>
+            $styles = $this->getDocumentStyles($wordHtml);
+
+            $html = $this->header();
+
+            $html .= '<style>
                     ' . $styles . '
                     #word-content {
                         word-wrap: break-word; /* Quebra o texto automaticamente */
@@ -41,7 +55,7 @@ class WordVisualizer implements VisualizerInterface
                     }
                 </style>';
 
-        $html .= '
+            $html .= '
             <div class="mt-2 flex justify-center items-center space-x-4">
                 <button id="align-left" class="align-button icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                     <i class="fas fa-align-left"></i>
@@ -58,14 +72,14 @@ class WordVisualizer implements VisualizerInterface
             </div>
         </div>';
 
-        $html .= '
+            $html .= '
         <div class="p-6 w-full max-w-4xl mt-2">
             <div id="word-content" class="mb-4 bg-white p-6 rounded-lg shadow-xl">
                 ' . $wordHtml . '
             </div>
         </div>';
 
-        $html .= '
+            $html .= '
         <script>
             // Selecionar o conteúdo do documento Word
             const wordContent = document.getElementById("word-content");
@@ -82,9 +96,13 @@ class WordVisualizer implements VisualizerInterface
             document.getElementById("align-justify").addEventListener("click", () => setAlignment("justify"));
         </script>';
 
-        $html .= $this->footer();
+            $html .= $this->footer();
 
-        return $html;
+            return $html;
+            
+        } catch (\Throwable $th) {
+            return $this->errorPage();
+        }
     }
 
     private function getDocumentStyles(string $html): string
