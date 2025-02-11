@@ -28,10 +28,6 @@ class PDFVisualizer implements VisualizerInterface
 
         try {
 
-            if (!file_exists($this->documentUrl)) {
-                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
-            }
-
             $html .= '
                 <div class="flex justify-center items-center space-x-4">
 
@@ -44,7 +40,7 @@ class PDFVisualizer implements VisualizerInterface
                     </button>
 
                     <div class="p-1">
-                        <input id="page-input" type="number" min="1" class="text-black p-1 rounded-md text-center w-12" placeholder="1" />
+                        <input id="page-input" type="number" min="1" class="bg-white text-black p-1 rounded-md text-center w-12" placeholder="1" />
                     </div>
 
                     ' . $this->addtionalContent . '
