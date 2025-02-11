@@ -28,10 +28,6 @@ class WordVisualizer implements VisualizerInterface
     {
         try {
 
-            if (!file_exists($this->documentUrl)) {
-                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
-            }
-
             Settings::setOutputEscapingEnabled(true);
 
             $word = IOFactory::load($this->documentUrl);

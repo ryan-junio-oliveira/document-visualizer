@@ -26,10 +26,6 @@ class ImageVisualizer implements VisualizerInterface
         try {
             $html = $this->header();
 
-            if(!file_exists($this->documentUrl)){
-                throw new RuntimeException('Não foi possivel encontrar o arquivo especificado');
-            }
-
             $html .= '
                 <div class="flex justify-center items-center space-x-4">
 
