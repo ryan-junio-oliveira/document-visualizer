@@ -15,7 +15,8 @@ class ImageVisualizer implements VisualizerInterface
     private ?string $addtionalContent = null;
 
     public function __construct(
-        $documentUrl, $addtionalContent
+        $documentUrl,
+        $addtionalContent
     ) {
         $this->documentUrl = $this->sanitizeContent($documentUrl);
         $this->addtionalContent = $this->sanitizeContent($addtionalContent);
@@ -26,36 +27,29 @@ class ImageVisualizer implements VisualizerInterface
         try {
             $html = $this->header();
 
-            $html .= '
-                <div class="flex justify-center items-center space-x-4">
 
-                    <button id="zoom-out" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
-                        <i class="fas fa-search-minus"></i>
-                    </button>
+            $html .= '<div class="flex flex-col items-center w-full p-4 text-gray-800">
 
-                    ' . $this->addtionalContent . '
+                    <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
+                        <button id="zoom-out" class="p-2 cursor-pointer icon-button"><i class="fas fa-search-minus"></i></button>
+                        <input id="page-input" type="number" min="1" class="p-2 cursor-pointer w-12 p-1 text-center rounded-md" placeholder="1" />
+                        ' . $this->addtionalContent . '
+                        <button id="zoom-in" class="p-2 cursor-pointer icon-button"><i class="fas fa-search-plus"></i></button>
+                    </div>
+                    
+                    <div class="w-full flex justify-center overflow-auto p-2">
+                         <img id="image-viewer" src="' . $this->documentUrl . '" alt="Visualização de imagem" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
+                    </div>
 
-                    <button id="zoom-in" class="icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
-                        <i class="fas fa-search-plus"></i>
-                    </button>
-
+                    <div id="error-message" class="hidden text-red-600 font-bold text-lg mt-2">
+                        Não foi possível visualizar este documento.
+                    </div>
+                    <a id="download-link" href="' . $this->documentUrl . '" download class="hidden bg-blue-600 px-4 py-2 rounded-md mt-2">
+                        Baixar documento
+                    </a>
                 </div>
-                
             </div>
-
-            <div class="p-6 w-full max-w-4xl text-center mt-6 justify-center items-center">
-
-                <div class="flex justify-center mb-4">
-                    <img id="image-viewer" src="' . $this->documentUrl . '" alt="Visualização de imagem" class="rounded-lg shadow-xl" style="max-width: 100%; height: auto;">
-                </div>
-
-                <div id="error-message" class="text-white text-lg hidden">
-                    Não foi possível visualizar este documento. <br>
-                    <a href="' . $this->documentUrl . '" download class="underline text-blue-400">Clique aqui para baixar o documento.</a>
-                </div>
-
-            </div>
-
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
             <script>
                 let zoomLevel = 1;
                 const img = document.getElementById("image-viewer");

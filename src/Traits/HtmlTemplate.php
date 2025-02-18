@@ -19,10 +19,10 @@ trait HtmlTemplate
             <!-- Font Awesome CDN -->
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         </head>
-        <body class="bg-gray-300 bg-opacity-70 backdrop-blur-md flex items-center flex flex-col w-full min-h-screen">
+        <body class="bg-gray-300 flex items-center flex flex-col w-full min-h-screen">
 
             <!-- Navbar que ocupa a largura total -->
-            <div class="w-full z-10 relative bg-gray-900 bg-opacity-70 text-white py-2 text-center flex flex-col shadow-lg backdrop-blur-md">';
+            <div class="w-full z-10 relative text-white py-2 text-center flex flex-col">';
     }
 
     private function footer()
