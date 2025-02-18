@@ -52,17 +52,17 @@ class WordVisualizer implements VisualizerInterface
                 </style>';
 
             $html .= '
-            <div class="mt-2 flex justify-center items-center space-x-4">
-                <button id="align-left" class="align-button icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+            <div class="mt-2 flex justify-center items-center space-x-4 text-gray-800">
+                <button id="align-left" class="align-button icon-button hover:text-gray-700 font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                     <i class="fas fa-align-left"></i>
                 </button>
-                <button id="align-center" class="align-button icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+                <button id="align-center" class="align-button icon-button hover:text-gray-700 font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                     <i class="fas fa-align-center"></i>
                 </button>
-                <button id="align-right" class="align-button icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+                <button id="align-right" class="align-button icon-button hover:text-gray-700 font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                     <i class="fas fa-align-right"></i>
                 </button>
-                <button id="align-justify" class="align-button icon-button hover:bg-white hover:text-gray-700 text-white font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
+                <button id="align-justify" class="align-button icon-button hover:text-gray-700 font-bold py-2 px-4 rounded-md transition-transform transform hover:scale-105">
                     <i class="fas fa-align-justify"></i>
                 </button>
             </div>
